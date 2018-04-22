@@ -29,13 +29,13 @@
       var file = document.getElementById('file-input').files[0];
       var choice = '?';
       if (document.getElementById('kitkat').checked) {
-        choice = '0';
-      }
-      if (document.getElementById('snickers').checked) {
         choice = '1';
       }
-      if (document.getElementById('skittles').checked) {
+      if (document.getElementById('snickers').checked) {
         choice = '2';
+      }
+      if (document.getElementById('twix').checked) {
+        choice = '3';
       }
       var news = databaseR.push();
       var user_name = auth.currentUser.uid;
@@ -121,9 +121,9 @@
         <span class="checkmark"></span>
       </label>
       <label class="container">
-        <img src="src/skittles.png" height="150" width="150"/>
+        <img src="src/twix.png" height="150" width="150"/>
 
-        <input type="radio" checked="checked" name="radio" id='skittles'>
+        <input type="radio" checked="checked" name="radio" id='twix'>
         <span class="checkmark"></span>
       </label>
       <button id="submit" type="submit" onclick="handleFileSelect()" style="padding-top:30px; border: 0; background: transparent; outline:0;">
