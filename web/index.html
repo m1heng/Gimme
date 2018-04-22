@@ -1,0 +1,144 @@
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+
+  <title>The HTML5 Herald</title>
+  <meta name="description" content="The HTML5 Herald">
+  <meta name="author" content="SitePoint">
+
+  <link rel="stylesheet" type="text/css" href="app.css">
+
+  <!--[if lt IE 9]>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv.js"></script>
+  <![endif]-->
+</head>
+<script src="/__/firebase/3.9.0/firebase-app.js"></script>
+  <script src="/__/firebase/3.9.0/firebase-auth.js"></script>
+  <script src="/__/firebase/3.9.0/firebase-storage.js"></script>
+  <script src="/__/firebase/3.9.0/firebase-database.js"></script>
+  <script src="/__/firebase/init.js"></script>
+
+  <script>
+    var auth = firebase.auth();
+    var storageRef = firebase.storage().ref();
+    var databaseR = firebase.database().ref('user');
+    
+    
+
+    function handleFileSelect() {
+      var file = document.getElementById('file-input').files[0];
+      var choice = '?';
+      if (document.getElementById('kitkat').checked) {
+        choice = '0';
+      }
+      if (document.getElementById('snickers').checked) {
+        choice = '1';
+      }
+      if (document.getElementById('skittles').checked) {
+        choice = '2';
+      }
+      var news = databaseR.push();
+      var user_name = auth.currentUser.uid;
+      console.log(file +  + document.getElementById('snickers').checked );
+      
+      news.set({
+        'user' : user_name,
+        'file' : file.name,
+        'choice': choice
+      });
+      var metadata = {
+        'contentType': file.type
+      };
+
+      // Push to child path.
+      // [START oncomplete]
+      storageRef.child('images/' + user_name+ '/' + file.name  ).put(file, metadata).then(function(snapshot) {
+        console.log('Uploaded', snapshot.totalBytes, 'bytes.');
+        console.log('File metadata:', snapshot.metadata);
+
+        // Let's get a download URL for the file.
+        snapshot.ref.getDownloadURL().then(function(url) {
+          console.log('File available at', url);
+          window.location.replace("./done.html?" + url);
+          // [START_EXCLUDE]
+          // [END_EXCLUDE]
+        });
+      }).catch(function(error) {
+        // [START onfailure]
+        console.error('Upload failed:', error);
+        // [END onfailure]
+      });
+      // [END oncomplete]
+      
+      
+    }
+
+    window.onload = function() {
+
+      auth.onAuthStateChanged(function(user) {
+        if (user) {
+          console.log('Anonymous user signed-in.', user);
+          document.getElementById('file').disabled = false;
+        } else {
+          console.log('There was no anonymous session. Creating a new anonymous user.');
+          // Sign the user in anonymously since accessing Storage requires the user to be authorized.
+          auth.signInAnonymously().catch(function(error) {
+            if (error.code === 'auth/operation-not-allowed') {
+              window.alert('Anonymous Sign-in failed. Please make sure that you have enabled anonymous ' +
+                  'sign-in on your Firebase project.');
+            }
+          });
+        }
+      });
+    }
+  </script>
+
+
+<body>
+  <div id="header">
+    <img id="logo" src="src/logo.png" alt="logo" align="center"/>
+  </div>
+  <div id="body">
+    <h2 id="selfie_text">take a selfie</h2>
+    <div class="image-upload">
+      <label for="file-input">
+        <img id="camera" src="src/camera.png" height="90" width="90" onmouseover="this.src='src/camera_active.png';" onmouseout="this.src='src/camera.png';"/>
+      </label>
+    <input id="file-input" type="file"/>
+    <div id="uploaded"/>
+    <h2 id="selfie_text">take your pick</h2>
+    <div>
+      <label class="container">
+        <img src="src/kitkat.png" height="150" width="150"/>
+
+        <input type="radio" checked="checked" name="radio" id='kitkat'>
+        <span class="checkmark"></span>
+      </label>
+      <label class="container">
+        <img src="src/snickers.png" height="150" width="150"/>
+
+        <input type="radio" checked="checked" name="radio" id='snickers'>
+        <span class="checkmark"></span>
+      </label>
+      <label class="container">
+        <img src="src/skittles.png" height="150" width="150"/>
+
+        <input type="radio" checked="checked" name="radio" id='skittles'>
+        <span class="checkmark"></span>
+      </label>
+      <button id="submit" type="submit" onclick="handleFileSelect()" style="padding-top:30px; border: 0; background: transparent; outline:0;">
+        <img height="50" width="50" src="src/icon_confirm.png"/>
+      </button>
+      <div id="submitted"/>
+    </div>
+  </div>
+  </div>
+
+
+</body>
+
+
+
+
+
+</html>
