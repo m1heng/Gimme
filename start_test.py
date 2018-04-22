@@ -15,6 +15,17 @@ import serial
 from Naked.toolshed.shell import execute_js, muterun_js
 import serial
 
+class counter(object):
+	"""docstring for counter"""
+	def __init__(self):
+		self.count = 0
+	def add(self):
+		self.count += 1
+	def reset(self):
+		self.count = 0
+		
+
+
 def camera_recog():
     print("[INFO] camera sensor warming up...")
     vs = cv2.VideoCapture(1); #get input from webcam
@@ -71,14 +82,14 @@ def findPeople(features_arr, positions, thres = 0.6, percent_thres = 70):
 
     print('Best: ' + str(bestpers) + ' With Posibility: ' + str(bestposi))
     if bestpers == "Unknown":
-    	unknowcount ++ 
-    	if unknowcount >= 5:
+    	unknowcount.add()
+    	if unknowcount.count >= 5:
     		print('Deny action send to hardware')
-    		ser.write(4)
-    		unknowcount = 0
+    		ser.write('4'.encode())
+    		unknowcount.reset()
     else:
     	user_choice = bestpers.split('-')[2]
-    	ser.write(int(user_choice))
+    	ser.write(user_choice.encode())
     	print('Vaild Action send to hardware' + str(int(user_choice)))
 
     return returnRes
@@ -122,8 +133,10 @@ def filecheck():
 				if nd.startswith('user'):
 					create_manual_data_test(image_root, nd)
 					shutil.rmtree(os.path.join(image_root, nd))
+
+
 if __name__ == '__main__':
-	unknowcount = 0
+    unknowcount = counter()
     FRGraph = FaceRecGraph()
     aligner = AlignCustom()
     extract_feature = FaceFeature(FRGraph)
