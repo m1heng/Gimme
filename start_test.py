@@ -13,7 +13,7 @@ import os
 import shutil
 import serial
 from Naked.toolshed.shell import execute_js, muterun_js
-
+import serial
 
 def camera_recog():
     print("[INFO] camera sensor warming up...")
@@ -41,7 +41,8 @@ def camera_recog():
         cv2.imshow("Frame",frame)
         key = cv2.waitKey(1) & 0xFF
         if key == ord("q"):
-            #ft._stop_event.set()
+            f = open('./facerec_128D.txt', 'w')
+            f.write(json.dumps(data_set))
             break
 
 def findPeople(features_arr, positions, thres = 0.6, percent_thres = 70):
@@ -67,7 +68,19 @@ def findPeople(features_arr, positions, thres = 0.6, percent_thres = 70):
         	bestposi = percentage
         	bestpers = result
         returnRes.append((result,percentage))
+
     print('Best: ' + str(bestpers) + ' With Posibility: ' + str(bestposi))
+    if bestpers == "Unknown":
+    	unknowcount ++ 
+    	if unknowcount >= 5:
+    		print('Deny action send to hardware')
+    		ser.write(4)
+    		unknowcount = 0
+    else:
+    	user_choice = bestpers.split('-')[2]
+    	ser.write(int(user_choice))
+    	print('Vaild Action send to hardware' + str(int(user_choice)))
+
     return returnRes
 
 def create_manual_data_test(root, file_name):
@@ -110,6 +123,7 @@ def filecheck():
 					create_manual_data_test(image_root, nd)
 					shutil.rmtree(os.path.join(image_root, nd))
 if __name__ == '__main__':
+	unknowcount = 0
     FRGraph = FaceRecGraph()
     aligner = AlignCustom()
     extract_feature = FaceFeature(FRGraph)
@@ -119,7 +133,10 @@ if __name__ == '__main__':
     f.close()
     lock = threading.Lock()
     ft = threading.Thread(target=filecheck)
+    print("File update threading online ")
     ft.start()
+    ser = serial.Serial('/dev/tty.usbmodem1411', 9600)
+    print("Hardware Online")
     camera_recog()
 
 
